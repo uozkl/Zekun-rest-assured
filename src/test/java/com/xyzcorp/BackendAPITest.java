@@ -6,6 +6,8 @@ import io.restassured.http.ContentType;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -101,21 +103,28 @@ public class BackendAPITest {
     @Test
     public void testPostWeight() {
         JSONObject record = new JSONObject()
-                .put("pounds", 2020)
+                .put("pounds", 2462)
                 .put("sets", 10)
                 .put("name", "bench press")
                 .put("reps", 15);
-
-        given()
-                .relaxedHTTPSValidation()
-                .accept(ContentType.JSON)
-                .contentType(ContentType.JSON)
-                .body(record.toString())
-                .when()
-                .post("https://staging.tiered-planet.net/werk-it-back-end/weights/user/1")
-                .then()
-                .assertThat()
-                // Status code 201 would be better
-                .statusCode(200);
+        JSONObject response = new JSONObject(
+                given()
+                        .relaxedHTTPSValidation()
+                        .accept(ContentType.JSON)
+                        .contentType(ContentType.JSON)
+                        .body(record.toString())
+                        .when()
+                        .post("https://staging.tiered-planet.net/werk-it-back-end/weights/user/1")
+                        .then()
+                        .assertThat()
+                        // Status code 201 would be better
+                        .statusCode(200)
+                        .extract()
+                        .asPrettyString());
+        assertEquals(response.getInt("pounds"), 2462);
+        assertEquals(response.getInt("sets"), 10);
+        assertEquals(response.getInt("reps"), 15);
+        assertNotEquals(Integer.valueOf(response.getInt("userId")), "");
+        assertNotEquals(Integer.valueOf(response.getInt("id")), "");
     }
 }
